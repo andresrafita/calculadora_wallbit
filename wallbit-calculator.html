@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Ahorro — Wallbit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #000;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-tr { width: 400px; height: 400px; background: #0D99FF; opacity: .06; top: -100px; right: -100px; }
+    .glow-bl { width: 300px; height: 300px; background: #0D99FF; opacity: .04; bottom: 0;    left: -80px; }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Logo ── */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    .logo-text {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -.3px;
+    }
+
+    /* ── Header ── */
+    .badge {
+      display: inline-block;
+      background: #0D99FF15;
+      border: 1px solid #0D99FF33;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 11px;
+      color: #0D99FF;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: -.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    h1 span { color: #0D99FF; }
+    .subtitle { color: #555; font-size: 14px; font-weight: 300; margin-bottom: 36px; }
+
+    /* ── Cards base ── */
+    .card {
+      border-radius: 20px;
+      padding: 28px;
+    }
+    .card-dark {
+      background: #0a0a0a;
+      border: 1px solid #161616;
+    }
+
+    /* ── Slider section ── */
+    .slider-card { margin-bottom: 16px; padding: 28px 28px 24px; }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    .slider-label {
+      font-size: 12px;
+      color: #444;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .income-display {
+      font-size: clamp(32px, 7vw, 48px);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+    }
+    .income-display .dollar { color: #0D99FF; }
+    .slider-right { text-align: right; font-size: 11px; color: #333; line-height: 1.7; }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+      background: linear-gradient(to right, #0D99FF var(--pct, 9%), #1a1a1a var(--pct, 9%));
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #0D99FF;
+      border: 3px solid #000;
+      box-shadow: 0 0 16px #0D99FF99;
+      cursor: pointer;
+      transition: transform .15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+    .presets {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .preset-btn {
+      flex: 1;
+      background: transparent;
+      border: 1px solid #222;
+      border-radius: 8px;
+      color: #666;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 8px 0;
+      transition: all .2s;
+    }
+    .preset-btn:hover, .preset-btn.active {
+      background: #0D99FF15;
+      border-color: #0D99FF;
+      color: #0D99FF;
+    }
+
+    /* ── Competitor selector ── */
+    .comp-card { margin-bottom: 16px; padding: 20px 24px; }
+    .section-label {
+      font-size: 11px;
+      color: #444;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+    .comp-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .comp-btn {
+      background: transparent;
+      border: 1px solid #1a1a1a;
+      border-radius: 10px;
+      color: #555;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 10px 16px;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .comp-btn:hover, .comp-btn.active {
+      background: #0D99FF10;
+      border-color: #0D99FF55;
+      color: #fff;
+    }
+
+    /* ── Result grid ── */
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card-red {
+      background: linear-gradient(135deg, #1a0505, #0d0000);
+      border: 1px solid #3a0808;
+    }
+    .card-blue {
+      background: linear-gradient(135deg, #030d1a, #010810);
+      border: 1px solid #0D99FF33;
+    }
+
+    .result-tag {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .tag-red   { color: #ff6b6b; }
+    .tag-blue  { color: #0D99FF; }
+
+    .result-amount {
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 700;
+      line-height: 1;
+    }
+    .amount-red   { color: #ff4444; }
+    .amount-white { color: #fff; }
+
+    .result-sub {
+      font-size: 13px;
+      font-weight: 300;
+      margin-top: 8px;
+    }
+    .sub-red  { color: #5a2222; }
+    .sub-blue { color: #1a4060; }
+
+    /* ── Annual savings ── */
+    .annual-card {
+      background: linear-gradient(135deg, #001a08, #000d04);
+      border: 1px solid #00ff6622;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .annual-label {
+      font-size: 11px;
+      color: #00cc44;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .annual-amount {
+      font-size: clamp(32px, 7vw, 52px);
+      font-weight: 700;
+      color: #00ff66;
+      line-height: 1;
+    }
+    .annual-right { text-align: right; }
+    .annual-monthly { font-size: 22px; font-weight: 700; color: #00cc44; }
+    .annual-per    { font-size: 12px; color: #1a4030; font-weight: 300; }
+
+    /* ── CTA ── */
+    .cta-wrap { text-align: center; }
+    .cta-btn {
+      background: #0D99FF;
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 16px 40px;
+      cursor: pointer;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      box-shadow: 0 0 30px #0D99FF44;
+      transition: box-shadow .2s, transform .1s;
+    }
+    .cta-btn:hover { box-shadow: 0 0 50px #0D99FF88; transform: translateY(-1px); }
+    .cta-btn:active { transform: scale(.97); }
+    .disclaimer { font-size: 11px; color: #2a2a2a; margin-top: 16px; font-weight: 300; }
+
+    @media (max-width: 420px) {
+      .result-grid { grid-template-columns: 1fr; }
+      .annual-card { flex-direction: column; align-items: flex-start; }
+      .annual-right { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow glow-tr"></div>
+  <div class="glow glow-bl"></div>
+
+  <div class="container">
+
+    <!-- Logo -->
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+        <path d="M20 2L36 11V29L20 38L4 29V11L20 2Z" fill="#0D99FF" opacity="0.15"/>
+        <path d="M20 2L36 11V29L20 38L4 29V11L20 2Z" stroke="#0D99FF" stroke-width="1.5" fill="none"/>
+        <path d="M12 16L20 12L28 16V24L20 28L12 24V16Z" fill="#0D99FF"/>
+        <path d="M16 18L20 16L24 18V22L20 24L16 22V18Z" fill="#000"/>
+      </svg>
+      <span class="logo-text">wallbit</span>
+    </div>
+
+    <!-- Header -->
+    <div>
+      <div class="badge">Calculadora de ahorro</div>
+      <h1>CALCULA TU AHORRO<br><span>CON WALLBIT</span></h1>
+      <p class="subtitle">Deslizá para ver cuánto dinero te ahorra Wallbit al mes.</p>
+    </div>
+
+    <!-- Slider card -->
+    <div class="card card-dark slider-card">
+      <div class="slider-header">
+        <div>
+          <p class="slider-label">Ingresos mensuales en USD</p>
+          <div class="income-display">
+            <span class="dollar">$</span><span id="income-display">1,000</span>
+          </div>
+        </div>
+        <div class="slider-right">
+          <div>por mes</div>
+          <div id="annual-income">$12,000 / año</div>
+        </div>
+      </div>
+
+      <input type="range" id="slider" min="100" max="10000" step="100" value="1000">
+
+      <div class="presets">
+        <button class="preset-btn" data-value="500">$500</button>
+        <button class="preset-btn active" data-value="1000">$1k</button>
+        <button class="preset-btn" data-value="2000">$2k</button>
+        <button class="preset-btn" data-value="5000">$5k</button>
+      </div>
+    </div>
+
+    <!-- Competitor card -->
+    <div class="card card-dark comp-card">
+      <p class="section-label">Compará con tu wallet actual</p>
+      <div class="comp-buttons" id="comp-buttons">
+        <button class="comp-btn active" data-id="payoneer" data-fee="3.0" data-label="~3% comisión">Payoneer</button>
+        <button class="comp-btn" data-id="wise"     data-fee="1.5"  data-label="~1.5% comisión">Wise</button>
+        <button class="comp-btn" data-id="paypal"   data-fee="4.0"  data-label="~4% comisión">PayPal</button>
+      </div>
+    </div>
+
+    <!-- Result cards -->
+    <div class="result-grid">
+      <div class="card card-red">
+        <p class="result-tag tag-red" id="comp-label">Con Payoneer (~3% comisión)</p>
+        <p class="result-amount amount-red">−$<span id="monthly-loss">30</span></p>
+        <p class="result-sub sub-red">perdés al mes</p>
+      </div>
+      <div class="card card-blue">
+        <p class="result-tag tag-blue">Con Wallbit (0%)</p>
+        <p class="result-amount amount-white">$0</p>
+        <p class="result-sub sub-blue">en comisiones</p>
+      </div>
+    </div>
+
+    <!-- Annual savings -->
+    <div class="card annual-card">
+      <div>
+        <p class="annual-label">Tu ahorro anual</p>
+        <p class="annual-amount">$<span id="annual-saving">360</span></p>
+      </div>
+      <div class="annual-right">
+        <p class="annual-monthly">$<span id="monthly-saving-right">30</span></p>
+        <p class="annual-per">al mes</p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <button class="cta-btn">Abre tu cuenta global →</button>
+      <p class="disclaimer">Tasas estimadas. Las comisiones reales pueden variar según operación.</p>
+    </div>
+
+  </div>
+
+  <script>
+    // ── State ──
+    let income = 1000;
+    let fee = 3.0;
+    let compName = "Payoneer";
+    let compLabel = "~3% comisión";
+
+    // Animated counters
+    let animLoss = 0, animAnnual = 0;
+    let rafLoss = null, rafAnnual = null;
+
+    function animateTo(current, target, setter, rafRef, duration = 500) {
+      if (rafRef.id) cancelAnimationFrame(rafRef.id);
+      const from = current;
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const val = from + (target - from) * eased;
+        setter(val);
+        if (t < 1) rafRef.id = requestAnimationFrame(step);
+      };
+      rafRef.id = requestAnimationFrame(step);
+    }
+
+    const rafLossRef   = {};
+    const rafAnnualRef = {};
+
+    function fmt(n) {
+      return Math.round(n).toLocaleString('es-BO');
+    }
+
+    function update() {
+      const loss = income * (fee / 100);
+      const annual = loss * 12;
+
+      animateTo(animLoss,   loss,   (v) => { animLoss = v;   document.getElementById('monthly-loss').textContent  = fmt(v); document.getElementById('monthly-saving-right').textContent = fmt(v); }, rafLossRef);
+      animateTo(animAnnual, annual, (v) => { animAnnual = v; document.getElementById('annual-saving').textContent = fmt(v); }, rafAnnualRef);
+
+      document.getElementById('comp-label').textContent = `Con ${compName} (${compLabel})`;
+      document.getElementById('income-display').textContent = income.toLocaleString();
+      document.getElementById('annual-income').textContent  = `$${(income * 12).toLocaleString()} / año`;
+
+      const pct = ((income - 100) / 9900) * 100;
+      document.getElementById('slider').style.setProperty('--pct', pct + '%');
+    }
+
+    // ── Slider ──
+    const slider = document.getElementById('slider');
+    slider.addEventListener('input', () => {
+      income = Number(slider.value);
+      syncPresets();
+      update();
+    });
+
+    // ── Presets ──
+    function syncPresets() {
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.toggle('active', Number(btn.dataset.value) === income);
+      });
+    }
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        income = Number(btn.dataset.value);
+        slider.value = income;
+        syncPresets();
+        update();
+      });
+    });
+
+    // ── Competitors ──
+    document.querySelectorAll('.comp-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.comp-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        fee       = parseFloat(btn.dataset.fee);
+        compName  = btn.textContent.trim();
+        compLabel = btn.dataset.label;
+        update();
+      });
+    });
+
+    // ── Init ──
+    update();
+  </script>
+</body>
+</html>
